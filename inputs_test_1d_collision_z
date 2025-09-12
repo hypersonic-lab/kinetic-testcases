@@ -1,0 +1,116 @@
+#CONSTANTS
+my_constants.m_no = 30.*m_u - 1.*m_e  # subtract electron mass for ionization
+m_no = my_constants.m_no
+ions.mass = m_no
+#################################
+####### GENERAL PARAMETERS ######
+#################################
+max_step = 600
+amr.n_cell = 512
+amr.max_level = 0
+amr.blocking_factor = 4
+geometry.dims = 1
+geometry.prob_lo = 0.
+geometry.prob_hi = 0.01636
+#################################
+###### Boundary Condition #######
+#################################
+boundary.field_lo = pec
+boundary.field_hi = pec
+electrostatic_potential_lo_z = -5.0    # V (at z = 0)
+electrostatic_potential_hi_z = 0.0 
+#################################
+############ NUMERICS ###########
+#################################
+warpx.serialize_initial_conditions = 1
+warpx.verbose = 1
+warpx.const_dt = 0.05e-12
+warpx.use_filter = 0
+# Do not evolve the E and B fields
+algo.maxwell_solver = yee
+# Order of particle shape factors
+algo.particle_shape = 1
+#################################
+############ PLASMA #############
+#################################
+particles.species_names = ions electron see
+algo.particle_shape = 3
+electron.charge = -q_e
+electron.mass = m_e
+electron.injection_style = NFluxPerCell
+electron.num_particles_per_cell = 500
+electron.surface_flux_pos = 0.01636
+electron.flux_normal_axis = z
+electron.flux_direction = -1
+electron.flux_profile = parse_flux_function
+electron.flux_function(x,y,z,t) = "1."
+electron.momentum_distribution_type = gaussianflux
+electron.uz_m = 0.0022   # Negative sign because flow is right to left along z
+electron.ux_m = 0.0       # No mean velocity in x
+electron.uy_m = 0.0       # No mean velocity in y
+electron.ux_th = 0.0      # or small value like 0.01
+electron.uy_th = 0.0
+electron.uz_th = 0.04
+#electron.ux_th = 0.1
+#electron.uy_th = 0.1
+#electron.uy_m = 0.07
+#electron.uz_th = 0.1
+ions.charge = +q_e
+ions.mass = m_no
+ions.injection_style = NFluxPerCell
+ions.num_particles_per_cell = 500
+ions.surface_flux_pos = 0.01636
+ions.flux_normal_axis = z
+ions.flux_direction = -1
+ions.flux_profile = constant
+ions.flux = 1.
+ions.momentum_distribution_type = gaussianflux
+ions.ux_th = 0.00017
+ions.uy_th = 0.00017
+ions.uz_th = 0.00017
+ions.ux_m = 0.0
+ions.uy_m = 0.0
+ions.uz_m = 0.0022
+#ions.ux_th = 0.1
+#ions.ux_m = 0.05
+#ions.uy_th = 0.1
+#ions.uz_th = 0.1
+see.charge = -q_e
+see.mass = m_e
+see.injection_style = NFluxPerCell
+see.num_particles_per_cell = 100
+see.surface_flux_pos = 0.0
+see.flux_normal_axis = z
+see.flux_direction = 1
+see.flux_profile = parse_flux_function
+see.flux_function(x,y,z,t) = "1."
+see.momentum_distribution_type = gaussianflux
+see.ux_th = 0.01
+see.uy_th = 0.01
+see.uz_th = 0.02
+see.ux_m = 0.0
+see.uy_m = 0.0
+see.uz_m = 0.07 
+#see.ux_th = 0.1
+#see.uy_th = 0.1
+#see.uy_m = 0.07
+#see.uz_th = 0.1
+#################################
+############ COLLISION ##########
+#################################
+#collisions.collision_names = collision1 collision2 collision3
+#collision1.species = ions ions
+#collision1.CoulombLog = 10.0
+#collision2.species = ions electron
+#collision2.CoulombLog = 10.0
+#collision3.species = electron see
+#collision3.CoulombLog = 10.0
+
+# Diagnostics
+diagnostics.diags_names = diag1
+diag1.fields_to_plot = Ex Ey Ez Bx By Bz rho
+
+diag1.format = openpmd
+diag1.intervals = 100
+diag1.diag_type = Full
+diag1.warpx_format= openpmd

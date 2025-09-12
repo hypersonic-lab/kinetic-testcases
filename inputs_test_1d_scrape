@@ -1,0 +1,37 @@
+max_step = 30          # quick test
+
+geometry.dims    = 1
+geometry.prob_lo = -149.e-6
+geometry.prob_hi =   1.e-6
+
+amr.n_cell        = 256
+amr.max_level     = 0
+amr.max_grid_size = 128
+
+boundary.field_lo = none
+boundary.field_hi = none
+
+particles.species_names = electrons
+electrons.species_type   = electron
+electrons.injection_style = "NUniformPerCell"
+electrons.num_particles_per_cell_each_dim = 1
+electrons.zmin = -149.e-6
+electrons.zmax = -129.e-6
+electrons.profile = constant
+electrons.density = 1.e23
+electrons.momentum_distribution_type = constant
+electrons.uz = 2000.
+electrons.save_particles_at_zhi = 1     # <-- NEW
+
+diagnostics.diags_names = diag1 diag_scrape
+
+# full dump (for sanity plots)
+diag1.diag_type = Full
+diag1.format    = openpmd
+diag1.intervals = 10
+
+# boundary scrape
+diag_scrape.diag_type  = BoundaryScraping
+diag_scrape.format     = openpmd
+diag_scrape.intervals  = 5
+
