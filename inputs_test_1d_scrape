@@ -3,6 +3,7 @@ max_step = 30          # quick test
 geometry.dims    = 1
 geometry.prob_lo = -149.e-6
 geometry.prob_hi =   1.e-6
+algo.particle_shape = 2
 
 amr.n_cell        = 256
 amr.max_level     = 0
