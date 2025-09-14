@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name Testing
+#SBATCH --account=hanquist
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --partition=cpu
+#SBATCH --qos=normal
+#SBATCH --time=48:00:00
+cd $SLURM_SUBMIT_DIR
+source ~/.bashrc
+date
+echo "Total MPI tasks: $SLURM_NTASKS"
+
+# Add pywarpx site-packages to PYTHONPATH
+pip install --user numpy matplotlib periodictable picmistandard yt
+
+# This line is needed if you are running WarpX with a python file
+export PYTHONPATH=$HOME/REPO/warpx/build/lib/site-packages:$PYTHONPATH
+
+# This line is needed if you are running WarpX with an input file as below
+export PATH=$HOME/REPO/warpx/build/bin:$PATH
+
+# You will need to updated the executable if you run 2d/3d/rz
+srun -n $SLURM_NTASKS warpx.1d.MPI.OMP.DP.PDP.OPMD.EB.QED inputs_test_1d_scrape
+date
