@@ -20,6 +20,7 @@ export PYTHONPATH=$HOME/REPO/warpx/build/lib/site-packages:$PYTHONPATH
 # This line is needed if you are running WarpX with an input file as below
 export PATH=$HOME/REPO/warpx/build/bin:$PATH
 
-# You will need to updated the executable if you run 2d/3d/rz
+# You will need to updated the executable if you run 2d/3d/RZ, change the inputs file name or run a python script (see commented out line below)
 srun -n $SLURM_NTASKS warpx.1d.MPI.OMP.DP.PDP.OPMD.EB.QED inputs_test_1d_scrape
+#srun -n $SLURM_NTASKS python inputs_test_rz_secondary_ion_emission_picmi.py
 date
