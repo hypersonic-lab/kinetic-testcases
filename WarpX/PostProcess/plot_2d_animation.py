@@ -10,7 +10,7 @@ import numpy as np
 from unyt import matplotlib_support
 
 
-def plot_1d_animation():
+def plot_2d_animation():
 
     print('------------Starting PostProcessing---------------')
     
@@ -80,8 +80,8 @@ def plot_1d_animation():
         fieldtdata = []
         xtdata = []
         tdata = []
-        miny = []
-        maxy =[]
+        miny = 100000
+        maxy = -100000
         for diagt in sortedNumb:
             # Extract time data for field
             fn = './diags/'+filteredList[diagt]
@@ -91,17 +91,19 @@ def plot_1d_animation():
             ds = yt.load(fn)
             ad = ds.all_data()
 
-            if (particle, 'particle_position_x') in ds.field_list:
+            if (particle, 'particle_position_y') in ds.field_list:
                 tdata.append(ds.current_time.to('s'))
-                ad[particle, 'particle_position_x'].name = "X-Axis"
+                ad[particle, 'particle_position_y'].name = "Z-Axis"
                 ad[particle, 'particle_momentum_z'].name = "1D Momentum"
 
                 # Store x and field data
-                xtdata.append(ad[particle, 'particle_position_x'].to('cm'))
+                xtdata.append(ad[particle, 'particle_position_y'].to('cm'))
                 fieldtdata.append(ad[particle, 'particle_momentum_z'])
                 
-                miny = np.min([miny, np.min(ad[particle, 'particle_momentum_z'])])
-                maxy = np.min([maxy, np.max(ad[particle, 'particle_momentum_z'])])
+                #print(ad[particle, 'particle_momentum_z'].d)
+                #print([maxy, np.max(ad[particle, 'particle_momentum_z'].d)])
+                miny = np.min([miny, np.min(ad[particle, 'particle_momentum_z'].d)])
+                maxy = np.max([maxy, np.max(ad[particle, 'particle_momentum_z'].d)])
             else:
                 print('No Data')
              
@@ -121,7 +123,7 @@ def plot_1d_animation():
                 ax.grid(True)
                 ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
                 ax.set_title(f"'{particle}' Momentum")
-                ax.set_xlim(np.min(ad[particle, 'particle_position_x']),np.max(ad[particle, 'particle_position_x']))
+                ax.set_xlim(np.min(ad[particle, 'particle_position_y']),np.max(ad[particle, 'particle_position_y']))
                 ax.legend()
 
             ani = animation.FuncAnimation(fig,animate,frames=len(xtdata),interval=400)
@@ -147,17 +149,17 @@ def plot_1d_animation():
             tdata.append(ds.current_time.to('s'))
             
             # cutting through the y0,z0 such that we hit the max density
-            ax = 0  # take a line cut along the x axis
+            ax = 1  # take a line cut along the x axis
             ray = ds.ortho_ray(ax, (0, 0))
 
             # Sort the ray values by 'x' so there are no discontinuities
             # in the line plot
-            srt = np.argsort(ray["index", "x"])
-            ray["x"].name = "X-Axis"
+            srt = np.argsort(ray["index", "y"])
+            ray["y"].name = "Z-Axis"
             ray[field].name = field
 
             # Store x and field data
-            xtdata.append(ray["x"][srt].to('cm'))
+            xtdata.append(ray["y"][srt].to('cm'))
             fieldtdata.append(ray[field][srt])
 
         ylim = [np.min(fieldtdata),np.max(fieldtdata)]
@@ -176,7 +178,7 @@ def plot_1d_animation():
                 ax.grid(True)
                 ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
                 ax.set_title(field)
-                ax.set_xlim(np.min(ray["x"][srt]),np.max(ray["x"][srt]))
+                ax.set_xlim(np.min(ray["y"][srt]),np.max(ray["y"][srt]))
                 ax.legend()                    
 
             ani = animation.FuncAnimation(fig,animate,frames=len(xtdata),interval=400)
@@ -186,4 +188,4 @@ def plot_1d_animation():
             
             
 if __name__ == "__main__":
-    plot_1d_animation()
+    plot_2d_animation()

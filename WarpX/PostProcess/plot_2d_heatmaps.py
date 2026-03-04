@@ -9,7 +9,7 @@ import numpy as np
 from unyt import matplotlib_support
 
 
-def plot_1d_postprocess():
+def plot_2d_heatmaps():
 
     print('------------Starting PostProcessing---------------')
     
@@ -74,54 +74,25 @@ def plot_1d_postprocess():
     print('Plotting along x-axis')
     
     ds = yt.load(fn)
-    ax = 0  # take a line cut along the x axis
+    ax = 1  # take a line cut along the x axis
 
     # cutting through the y0,z0 such that we hit the max density
     ray = ds.ortho_ray(ax, (0, 0))
 
-    # Sort the ray values by 'x' so there are no discontinuities
+    # Sort the ray values by 'y' (z-axis in2d) so there are no discontinuities
     # in the line plot
-    srt = np.argsort(ray["index", "x"])
-    ray["x"].name = "X-Axis"
+    srt = np.argsort(ray["index", "y"])
+    ray["y"].name = "z-Axis"
 
     ad = ds.all_data()
 
     with matplotlib_support:
         # Loop over each Field and plot them
-        for field in fields:
-            print(f"Plotting '{field}'")
-            ray[field].name = field
-
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.plot(ray["x"][srt].to('cm'), ray[field][srt])
-            ax.set_ylim(np.min(ray[field]),np.max(ray[field]))
-            ax.minorticks_on()
-            ax.grid(True)
-            ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
-            ax.set_title(field)
-            ax.set_xlim(np.min(ray["x"][srt]),np.max(ray["x"][srt]))
-
-            fig.savefig(f"fig1D_{field}_xsweep.png")
-            print(f"Saved as fig1D_{field}_xsweep.png")
-            
-        # Loop over each Particle and plot their velocity
-        for particle in particles:
-            print(f"Plotting '{particle}' uz")
-            ad[particle, 'particle_position_x'].name = "X-Axis"
-            ad[particle, 'particle_momentum_z'].name = "1D Momentum"
-
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.scatter(ad[particle, 'particle_position_x'].to('cm'), ad[particle, 'particle_momentum_z'])
-            ax.set_ylim(np.min(ad[particle, 'particle_momentum_z']),np.max(ad[particle, 'particle_momentum_z']))
-            ax.minorticks_on()
-            ax.grid(True)
-            ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
-            ax.set_title(f"'{particle}' Momentum")
-            ax.set_xlim(np.min(ad[particle, 'particle_position_x']),np.max(ad[particle, 'particle_position_x']))
-
-            fig.savefig(f"fig1D_{particle}_uz_xsweep.png")
-            print(f"Saved as fig1D_{particle}_uz_xsweep.png")
+        #for field in fields:
+            slc = yt.SlicePlot(ds, "z", ('boxlib', 'phi'),center=[2.5e-5, 2e-4, .5])
+            slc.set_log(('boxlib', 'phi'),False)
+            slc.save()
 
 
 if __name__ == "__main__":
-    plot_1d_postprocess()
+    plot_2d_heatmaps()
