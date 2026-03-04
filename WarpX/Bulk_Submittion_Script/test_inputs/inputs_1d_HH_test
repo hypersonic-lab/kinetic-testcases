@@ -1,0 +1,100 @@
+#CONSTANTS
+my_constants.m_no = 4.*m_u - 1.*m_e  # subtract electron mass for ionization
+my_constants.V0 = 2.5
+my_constants.d = 0.0011
+my_constants.ep0 = 8.8541878188e-12
+m_no = my_constants.m_no
+ions.mass = m_no
+#################################
+####### GENERAL PARAMETERS ######
+#################################
+max_step = 3000
+amr.n_cell = 300
+amr.max_level = 0
+amr.blocking_factor = 4
+geometry.dims = 1
+geometry.prob_lo = 0.
+geometry.prob_hi = d
+#################################
+###### Boundary Condition #######
+#################################
+boundary.field_lo = pec
+boundary.field_hi = pec
+boundary.potential_lo_z = 0
+boundary.potential_hi_z = V0
+boundary.particle_lo = absorbing
+boundary.particle_hi = absorbing
+#################################
+############ NUMERICS ###########
+#################################
+warpx.serialize_initial_conditions = 1
+warpx.verbose = 1
+warpx.const_dt = 5e-11
+warpx.use_filter = 0
+# Do not evolve the E and B fields
+#algo.maxwell_solver = yee
+# Order of particle shape factors
+algo.particle_shape = 1
+warpx.do_electrostatic = labframe
+#################################
+############ PLASMA #############
+#################################
+particles.species_names = electron ions see
+algo.particle_shape = 3
+electron.charge = -q_e
+electron.mass = m_e
+electron.do_continuous_injection = 1
+electron.injection_style = NFluxPerCell
+electron.num_particles_per_cell = 100
+electron.surface_flux_pos = d-0.000001
+electron.flux_normal_axis = z
+electron.flux_direction = -1
+electron.flux_profile = constant
+electron.flux = 6.6922e21
+electron.save_particles_at_zlo = 1
+electron.momentum_distribution_type = gaussianflux
+electron.uz_th = 0.0014
+
+ions.charge = +q_e
+ions.mass = m_no
+ions.do_continuous_injection = 1
+ions.injection_style = NFluxPerCell
+ions.num_particles_per_cell = 100
+ions.surface_flux_pos = d-0.0000001
+ions.flux_normal_axis = z
+ions.flux_direction = -1
+ions.flux_profile = constant
+ions.flux = 3.9291e20
+ions.momentum_distribution_type = gaussianflux
+ions.uz_m = 3.2765e-05
+ions.uz_th = 1.6383e-05
+ions.save_particles_at_zlo = 1
+
+see.charge = -q_e
+see.mass = m_e
+see.do_continuous_injection = 1
+see.injection_style = NFluxPerCell
+see.num_particles_per_cell = 100
+see.surface_flux_pos = 0
+see.flux_normal_axis = z
+see.flux_direction = 1
+see.flux_profile = constant
+see.flux = 2.3391e+22
+see.save_particles_at_zhi = 1
+see.save_particles_at_zlo = 1
+see.momentum_distribution_type = gaussianflux
+see.uz_th = 4.4236e-04
+
+# Diagnostics
+diagnostics.diags_names = diag1 diag2
+diag1.fields_to_plot = Ez rho jz phi
+
+#diag1.format = openpmd
+diag1.intervals = 1000
+diag1.diag_type = Full
+
+diag2.diag_type = BoundaryScraping
+diag2.format = openpmd
+diag2.intervals = 1000
+#diag1.warpx_format= openpmd
+
