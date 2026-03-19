@@ -119,6 +119,7 @@ def mod_WarpX(args, case_to_modify):
 def mod_run_HPC(args, hpc_flag='slurm', abs_path=None):
     case_abs_path = os.path.join(args.absOutPath[0], args.outName[0])
     job_name      = args.outName[0] 
+    input_name    = args.inputMain[0]
 
     # SLURM flag 
     if hpc_flag == 'slurm':
@@ -127,6 +128,8 @@ def mod_run_HPC(args, hpc_flag='slurm', abs_path=None):
         path_replace = f'cd {abs_path}/{job_name}' 
         case_str     = '#SBATCH --job-name.*'
         case_replace = f'#SBATCH --job-name {job_name}'
+        input_str    = 'srun -n $SLURM_NTASKS.*'
+        input_replace= f"srun -n $SLURM_NTASKS warpx.1d.MPI.OMP.DP.PDP.OPMD.EB.QED {input_name}"
 
     # Modify hpc file  
     open_file    = open(hpc_file, 'r+')
@@ -136,6 +139,7 @@ def mod_run_HPC(args, hpc_flag='slurm', abs_path=None):
     # Searching and writing strings 
     new_file      = re.sub(case_str, case_replace, read_file)
     new_file      = re.sub(path_str, path_replace, new_file)
+    new_file      = re.sub(input_str, input_replace, new_file)
     writing_file  = open(hpc_file, 'r+')
     writing_file.write(new_file) 
 
