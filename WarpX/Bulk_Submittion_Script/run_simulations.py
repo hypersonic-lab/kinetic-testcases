@@ -91,11 +91,19 @@ def create_case(args):
 def mod_WarpX(args, case_to_modify):
     # Strings to replace (Regex is used to find variables in input files)
     volt_string     = 'my_constants.V0 = \d*[.,]?\d*'     
-    domain_string   = 'my_constants.d = \d*[.,]?\d*'     
+    domain_string   = 'my_constants.d = \d*[.,]?\d*'    
+    grid_string     = 'amr.n_cell = \d*[.,]?\d*' 
+    par_string1     = 'ions.num_particles_per_cell = \d*[.,]?\d*'
+    par_string2     = 'electron.num_particles_per_cell = \d*[.,]?\d*'
+    par_string3     = 'see.num_particles_per_cell = \d*[.,]?\d*'
 
     # Replace strings  
     volt_replace    = f'my_constants.V0 = {args.voltage[0]}'
     domain_replace  = f'my_constants.d = {args.domainLength[0]}'
+    grid_replace    = f'amr.n_cell = {args.gridCells[0]}'
+    par_replace1    = f'ions.num_particles_per_cell = {args.nParticles[0]}'
+    par_replace2    = f'electron.num_particles_per_cell = {args.nParticles[0]}'
+    par_replace3    = f'see.num_particles_per_cell = {args.nParticles[0]}'
 
     # Reading cfg file, they have to be named rans or laminar. 
     file_to_read        = f'{args.inputMain[0]}'
@@ -107,7 +115,11 @@ def mod_WarpX(args, case_to_modify):
 
     # Searching and writing new file 
     new_file     = re.sub(volt_string, volt_replace, file_open) 
-    new_file     = re.sub(domain_string, domain_replace, new_file) 
+    new_file     = re.sub(domain_string, domain_replace, new_file)
+    new_file     = re.sub(grid_string, grid_replace, new_file) 
+    new_file     = re.sub(par_string1, par_replace1, new_file) 
+    new_file     = re.sub(par_string2, par_replace2, new_file) 
+    new_file     = re.sub(par_string3, par_replace3, new_file)  
 
     writing_file = open(os.path.join(case_to_modify, file_to_read), 'r+') 
     writing_file.write(new_file) 

@@ -19,6 +19,8 @@ import os
 # User inputs 
 voltage         = [2, 3]                   #[V]
 domainLength    = 0.0011                   #[m] Domain Length
+gridCells       = [300,600]                #[#] Number grid cells in Domain
+nParticles      = [10,50,100,200]          #[#/cell] Number Particles per Cell
 
 input_main      = 'inputs_1d_HH_test'           #main input file to copy 
 abs_path        = '/scratch/gautschi/obrienf/HaraHanquist/bulk_trial'  #path were cases are created
@@ -28,28 +30,32 @@ parser = argparse.ArgumentParser()
 
 
 '''
- Iterates through mach numebrs and AoA. To iterate through 
+ Iterates through Variables. To iterate through 
  temperature and pressure two additional for loops will need to be added. 
 '''
 for i in voltage:
-        # Load classes 
-    args   = parser.parse_args() 
+    for j in gridCells:
+        for k in nParticles:
+                # Load classes 
+            args   = parser.parse_args() 
 
-    # Set attibuts 
-    setattr(args, 'voltage', [i])  
-    setattr(args, 'outName', [f'V{i}']) 
-    setattr(args, 'domainLength', [domainLength])
-    setattr(args, 'absOutPath', [abs_path]) 
-    setattr(args, 'inputMain', [input_main]) 
+            # Set attibuts 
+            setattr(args, 'voltage', [i])  
+            setattr(args, 'gridCells', [j])  
+            setattr(args, 'nParticles', [k])  
+            setattr(args, 'outName', [f'V{i}_{j}grid_{k}particles']) 
+            setattr(args, 'domainLength', [domainLength])
+            setattr(args, 'absOutPath', [abs_path]) 
+            setattr(args, 'inputMain', [input_main]) 
 
-    # Create cases and modify SU2 input files (*.cfg) 
-    run_simulations.create_case(args) 
+            # Create cases and modify SU2 input files (*.cfg) 
+            run_simulations.create_case(args) 
 
-    #  Modify slurm or pbs scripts   
-    run_simulations.mod_run_HPC(args, abs_path=abs_path)
+            #  Modify slurm or pbs scripts   
+            run_simulations.mod_run_HPC(args, abs_path=abs_path)
 
-    # Run simulations using a pbs or slurm file  
-    run_simulations.run_CFD(args, local_flag=False, hpc_flag='slurm') 
+            # Run simulations using a pbs or slurm file  
+            run_simulations.run_CFD(args, local_flag=False, hpc_flag='slurm') 
 
-    # Destructures, free memory  
-    del args 
+            # Destructures, free memory  
+            del args 
