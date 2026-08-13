@@ -84,6 +84,9 @@ def plot_1d_scrape():
     diaglist = os.listdir(path='./diags')
     filteredList = []
     filteredNumb = []
+
+    if len(sys.argv) > 2:
+        diagnostic_names = [sys.argv[2]]
     
     for s in diaglist:
         # Check if starts with diagnostics name (not some other file)
@@ -118,21 +121,29 @@ def plot_1d_scrape():
         bulkIterations = ts.iterations
         
         # Find time for each bulk iteration
-        dt = times[1]-times[0]
-        diteration = bulkIterations[1]-bulkIterations[0]
+        if len(times) <= 1:
+            dt = times[0]
+            diteration = bulkIterations[0]
+        else:
+            dt = times[1]-times[0]
+            diteration = bulkIterations[1]-bulkIterations[0]
         
         ws=[] # holding array for particle weights
         stepScrapeds = [] # holding array for timesteps
         stepTimes = [] # Holding array for time of steps
         
         # Extract time information from each iteration
-        for it in ts.iterations:
-            [w,stepScraped] = ts.get_particle(var_list=['w','stepScraped'],species=particles[pari],iteration=it)
-            stepTime = stepScraped * dt / diteration # Convert steps to times
+        try:
+            for it in ts.iterations:
+                [w,stepScraped] = ts.get_particle(var_list=['w','stepScraped'],species=particles[pari],iteration=it)
+                stepTime = stepScraped * dt / diteration # Convert steps to times
 
-            ws.append(w)
-            stepScrapeds.append(stepScraped)
-            stepTimes.append(stepTime)
+                ws.append(w)
+                stepScrapeds.append(stepScraped)
+                stepTimes.append(stepTime)
+        except Exception as e:
+            print(e)
+            continue
 
         # Format properly
         scrapItr = np.concatenate((stepScrapeds))

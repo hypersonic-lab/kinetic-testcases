@@ -6,12 +6,13 @@ import os
 import matplotlib.pyplot as plt
 import yt
 import numpy as np
+import pandas as pd
 from unyt import matplotlib_support
 
 
-def plot_1d_postprocess():
+def export_density_data():
 
-    print('------------Starting PostProcessing---------------')
+    print('------------Extracting Field Data---------------')
     
     # Check to see if ./diags exists
     if not os.path.isdir('./diags'):
@@ -19,6 +20,8 @@ def plot_1d_postprocess():
 
     # Find Fields to plot from input file
     input_file_path = sys.argv[1]
+    if len(sys.argv) > 2:
+        diag_path = sys.argv[2]
 
     diagnostic_names = []
     fields = []
@@ -51,16 +54,13 @@ def plot_1d_postprocess():
         print(f"An error occurred: {e}")
 
     print(f"Diagnostics files named: '{diagnostic_names}'")
-    print(f"Fields to plot: '{fields}'")
+    print(f"Fields to extract: '{fields}'")
+    print(f"Species: {particles}")
 
     # List directories in diags and select newest and latest iteration
     diaglist = os.listdir(path='./diags')
     filteredList = []
     filteredNumb = []
-
-
-    if len(sys.argv) > 2:
-        diagnostic_names = sys.argv[2]
     
     for s in diaglist:
         # Check if starts with diagnostics name (not some other file)
@@ -73,9 +73,10 @@ def plot_1d_postprocess():
     # Select diags file to use
     sortedNumb = np.argsort(filteredList)
     fn = './diags/'+filteredList[sortedNumb[-1]]
+    if len(sys.argv) > 2:
+        fn = diag_path
 
     print('Processing Newest Diagnostics: '+ fn)
-    print('Plotting along x-axis')
     
     ds = yt.load(fn)
     ax = 0  # take a line cut along the x axis
@@ -88,44 +89,31 @@ def plot_1d_postprocess():
     srt = np.argsort(ray["index", "x"])
     ray["x"].name = "X-Axis"
 
-    ad = ds.all_data()
+    fields_out = ['x']+particles
+    print(fields_out)
 
-    with matplotlib_support:
-        # Loop over each Field and plot them
-        for field in fields:
-            print(f"Plotting '{field}'")
-            ray[field].name = field
+    data_out = np.zeros((len(fields_out),len(ray["x"])))
+    data_out[0] = ray["x"][srt].to('m')
 
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.plot(ray["x"][srt].to('cm'), ray[field][srt])
-            ax.set_ylim(np.min(ray[field]),np.max(ray[field]))
-            ax.minorticks_on()
-            ax.grid(True)
-            ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
-            ax.set_title(field)
-            ax.set_xlim(np.min(ray["x"][srt]),np.max(ray["x"][srt]))
+    qe = 1.60217663E-19 #elementary charge
+    #ion data
+    for i in range(len(particles)):
+        try:
+            data_out[i+1] = np.abs(ray[f'rho_{particles[i]}'][srt]) / qe
+            fields_out[i+1] = particles[i]
+        except Exception as e:
+            print(e)
 
-            fig.savefig(f"fig1D_{field}_xsweep.png")
-            print(f"Saved as fig1D_{field}_xsweep.png")
-            
-        # Loop over each Particle and plot their velocity
-        for particle in particles:
-            print(f"Plotting '{particle}' uz")
-            ad[particle, 'particle_position_x'].name = "X-Axis"
-            ad[particle, 'particle_momentum_z'].name = "1D Momentum"
 
-            fig, ax = plt.subplots(figsize=(12, 8))
-            ax.scatter(ad[particle, 'particle_position_x'].to('cm'), ad[particle, 'particle_momentum_z'])
-            ax.set_ylim(np.min(ad[particle, 'particle_momentum_z']),np.max(ad[particle, 'particle_momentum_z']))
-            ax.minorticks_on()
-            ax.grid(True)
-            ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
-            ax.set_title(f"'{particle}' Momentum")
-            ax.set_xlim(np.min(ad[particle, 'particle_position_x']),np.max(ad[particle, 'particle_position_x']))
+    if len(sys.argv) > 3:
+        file_name = f"density_data_{sys.argv[3]}"
+    else:
+        file_name = 'density_data'
 
-            fig.savefig(f"fig1D_{particle}_uz_xsweep.png")
-            print(f"Saved as fig1D_{particle}_uz_xsweep.png")
+    df = pd.DataFrame(data_out.T, columns=fields_out)
+    df.to_csv(f'{file_name}.csv', index=False)
+    df.to_csv(f'{file_name}.txt', index=False)
 
 
 if __name__ == "__main__":
-    plot_1d_postprocess()
+    export_density_data()
